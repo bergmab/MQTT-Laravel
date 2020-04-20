@@ -145,6 +145,15 @@ class MqttService
 
         return $string;
     }
+	
+    /* reconnect: reconnect to the broker */	
+    function reconnect(){
+        if($this->debug) echo "eof receive going to reconnect for good measure\n";
+        fclose($this->socket);
+        $this->connect_auto(false);
+        if(count($this->topics))
+            $this->subscribe($this->topics);
+    }
 
     /* subscribe: subscribes to topics */
     function subscribe($topics, $qos = 0){
@@ -249,11 +258,7 @@ class MqttService
 
             //$byte = fgetc($this->socket);
             if(feof($this->socket)){
-                if($this->debug) echo "eof receive going to reconnect for good measure\n";
-                fclose($this->socket);
-                $this->connect_auto(false);
-                if(count($this->topics))
-                    $this->subscribe($this->topics);
+		$this->reconnect();
             }
 
             $byte = $this->read(1, true);
@@ -288,6 +293,11 @@ class MqttService
                     $this->timesinceping = time();
                 }
             }
+		
+	    if(feof($this->socket)){
+		$this->reconnect();
+            }	
+		
             if($this->timesinceping < (time() - $this->keepalive )){
                 if($this->debug) echo "not found something so ping\n";
                 $this->ping();
