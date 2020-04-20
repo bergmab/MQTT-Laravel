@@ -158,7 +158,7 @@ class MqttService
             $buffer .= chr($topic["qos"]);  $i++;
             $this->topics[$key] = $topic;
         }
-        $cmd = 0x80;
+        $cmd = 0x82;
         //$qos
         $cmd +=	($qos << 1);
         $head = chr($cmd);
